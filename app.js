@@ -9,6 +9,8 @@ let transactions = [
     { id: 5, type: 'expense', amount: 200000, category: 'Belanja', date: '2023-10-06', description: 'Beli Kemeja Baru' }
 ];
 
+let currentFilterType = 'all'; // State filter tipe aktif (all, income, expense)
+
 // Helper Formatter
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -34,7 +36,6 @@ themeToggleBtn.addEventListener('click', () => {
     localStorage.theme = isDark ? 'dark' : 'light';
     themeIcon.classList.replace(isDark ? 'ph-moon' : 'ph-sun', isDark ? 'ph-sun' : 'ph-moon');
 
-    // Update warna font legend Chart saat ganti tema
     if (myChart) {
         myChart.options.plugins.legend.labels.color = isDark ? '#e2e8f0' : '#475569';
         myChart.data.datasets[0].borderColor = isDark ? '#1e293b' : '#fff';
@@ -47,9 +48,9 @@ themeToggleBtn.addEventListener('click', () => {
 // ==========================================
 // 3. UI RENDERER (CARD & LIST)
 // ==========================================
-const updateApp = (filter = 'all') => {
+const updateApp = () => {
     updateSummary();
-    renderTransactions(filter);
+    renderTransactions(); // Panggil tanpa param, data diambil dari State & DOM
     updateChartData();
 };
 
@@ -61,18 +62,38 @@ const updateSummary = () => {
     document.getElementById('totalBalance').innerText = formatRupiah(income - expense);
 };
 
-const renderTransactions = (filter) => {
+// --- LOGIKA FILTER TRANSAKSI YANG DIPERBARUI ---
+const renderTransactions = () => {
     const listContainer = document.getElementById('transactionList');
     listContainer.innerHTML = '';
 
-    let filteredData = filter === 'all' ? transactions : transactions.filter(t => t.type === filter);
+    // 1. Filter Berdasarkan Kategori Tipe Aktif
+    let filteredData = currentFilterType === 'all' ? transactions : transactions.filter(t => t.type === currentFilterType);
+
+    // 2. Filter Berdasarkan Input Tanggal (Custom Date Filter)
+    const startDate = document.getElementById('filterStartDate').value;
+    const endDate = document.getElementById('filterEndDate').value;
+
+    if (startDate) {
+        filteredData = filteredData.filter(t => t.date >= startDate);
+    }
+    if (endDate) {
+        filteredData = filteredData.filter(t => t.date <= endDate);
+    }
+
+    // 3. Urutkan berdasarkan tanggal terbaru (Descending)
     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    // Jika kosong
     if (filteredData.length === 0) {
-        listContainer.innerHTML = `<div class="text-center text-slate-500 dark:text-slate-400 py-6">Belum ada transaksi di kategori ini.</div>`;
+        listContainer.innerHTML = `<div class="text-center text-slate-500 dark:text-slate-400 py-8">
+            <i class="ph ph-receipt text-4xl mb-2"></i>
+            <p>Tidak ada transaksi yang sesuai.</p>
+        </div>`;
         return;
     }
 
+    // Render Data
     filteredData.forEach(trx => {
         const isIncome = trx.type === 'income';
         const colorClass = isIncome ? 'text-income bg-emerald-50 dark:bg-emerald-500/10' : 'text-expense bg-rose-50 dark:bg-rose-500/10';
@@ -195,20 +216,16 @@ document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
 
 
 // ==========================================
-// 5. EVENT LISTENERS (FORM & FILTER)
+// 5. EVENT LISTENERS
 // ==========================================
 
-// --- FITUR TANGGAL BARU ---
+// Input Form Transaksi (Fokus Tanggal)
 const dateInput = document.getElementById('date');
-
-// Hanya isi dengan tanggal hari ini JIKA diklik (focus) dan kolom masih kosong
 dateInput.addEventListener('focus', function () {
-    if (!this.value) {
-        this.valueAsDate = new Date();
-    }
+    if (!this.value) this.valueAsDate = new Date();
 });
-// --------------------------
 
+// Submit Form Baru
 document.getElementById('transactionForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const type = document.querySelector('input[name="type"]:checked').value;
@@ -219,26 +236,43 @@ document.getElementById('transactionForm').addEventListener('submit', function (
 
     transactions.push({ id: Date.now(), type, amount, category, date, description });
 
-    // Ini otomatis mereset semua form menjadi kosong (termasuk tanggal kembali jadi mm/dd/yyyy)
     this.reset();
-
     updateApp();
     resetChartTimer();
     alert('Transaksi berhasil ditambahkan!');
 });
 
+// Filter Button Tipe (Semua / Pemasukan / Pengeluaran)
 const filterBtns = document.querySelectorAll('.filter-btn');
 filterBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
+        // Hapus style aktif dari semua tombol
         filterBtns.forEach(b => {
             b.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
             b.classList.add('text-slate-500', 'dark:text-slate-400');
         });
+
+        // Tambahkan style aktif ke tombol yang diklik
         e.target.classList.remove('text-slate-500', 'dark:text-slate-400');
         e.target.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
-        renderTransactions(e.target.getAttribute('data-filter'));
+
+        // Set state dan render ulang
+        currentFilterType = e.target.getAttribute('data-filter');
+        renderTransactions();
     });
 });
+
+// --- EVENT FILTER TANGGAL ---
+document.getElementById('btnApplyDateFilter').addEventListener('click', () => {
+    renderTransactions(); // Akan merender berdasar tanggal yg diinput & tipe aktif
+});
+
+document.getElementById('btnResetDateFilter').addEventListener('click', () => {
+    document.getElementById('filterStartDate').value = '';
+    document.getElementById('filterEndDate').value = '';
+    renderTransactions(); // Kembalikan list ke normal
+});
+
 
 // ==========================================
 // 6. INIT APLIKASI
