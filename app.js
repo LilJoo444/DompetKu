@@ -9,9 +9,6 @@ let transactions = [
     { id: 5, type: 'expense', amount: 200000, category: 'Belanja', date: '2023-10-06', description: 'Beli Kemeja Baru' }
 ];
 
-// Setup Tanggal Form ke Hari Ini
-document.getElementById('date').valueAsDate = new Date();
-
 // Helper Formatter
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -53,7 +50,7 @@ themeToggleBtn.addEventListener('click', () => {
 const updateApp = (filter = 'all') => {
     updateSummary();
     renderTransactions(filter);
-    updateChartData(); // Perbarui chart
+    updateChartData();
 };
 
 const updateSummary = () => {
@@ -106,13 +103,12 @@ const renderTransactions = (filter) => {
 // 4. CHART.JS LOGIC & TIMER
 // ==========================================
 let myChart;
-let currentChartMode = 'type'; // 'type' atau 'category'
+let currentChartMode = 'type';
 let chartRotateInterval;
 let progressInterval;
-const ROTATE_TIME = 5000; // 5 detik ganti grafik
+const ROTATE_TIME = 5000;
 const categoryColors = ['#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#64748B'];
 
-// Init Chart Pertama Kali Kosong
 const initChart = () => {
     const ctx = document.getElementById('financeChart').getContext('2d');
     const isDark = document.documentElement.classList.contains('dark');
@@ -129,7 +125,6 @@ const initChart = () => {
     });
 };
 
-// Fungsi Mengisi Data Chart Berdasarkan Mode Aktif
 const updateChartData = () => {
     if (!myChart) initChart();
 
@@ -146,11 +141,8 @@ const updateChartData = () => {
         myChart.data.datasets[0].backgroundColor = ['#10B981', '#F43F5E'];
     }
     else if (currentChartMode === 'category') {
-        // Agregasi Data berdasarkan Kategori
         const catTotals = {};
-        transactions.forEach(t => {
-            catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
-        });
+        transactions.forEach(t => { catTotals[t.category] = (catTotals[t.category] || 0) + t.amount; });
 
         const labels = Object.keys(catTotals);
         const data = Object.values(catTotals);
@@ -163,7 +155,6 @@ const updateChartData = () => {
     myChart.update();
 };
 
-// Logika Timer dan Progress Bar
 const resetChartTimer = () => {
     clearInterval(chartRotateInterval);
     clearInterval(progressInterval);
@@ -171,24 +162,19 @@ const resetChartTimer = () => {
     const progressBar = document.getElementById('chartTimerBar');
     progressBar.style.width = '0%';
 
-    // Animasi Progress bar
     let width = 0;
     progressInterval = setInterval(() => {
-        width += (100 / (ROTATE_TIME / 100)); // Update per 100ms
+        width += (100 / (ROTATE_TIME / 100));
         progressBar.style.width = width + '%';
     }, 100);
 
-    // Ganti grafik saat waktu habis
     chartRotateInterval = setInterval(() => {
         switchChartMode(currentChartMode === 'type' ? 'category' : 'type');
     }, ROTATE_TIME);
 };
 
-// Fungsi Mengganti Mode Grafik (Tombol)
 const switchChartMode = (mode) => {
     currentChartMode = mode;
-
-    // Update style tombol
     document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
         if (btn.dataset.target === mode) {
             btn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
@@ -200,10 +186,9 @@ const switchChartMode = (mode) => {
     });
 
     updateChartData();
-    resetChartTimer(); // Reset timer saat ganti
+    resetChartTimer();
 };
 
-// Event Listener Tombol Chart
 document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
     btn.addEventListener('click', (e) => switchChartMode(e.target.dataset.target));
 });
@@ -212,6 +197,18 @@ document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
 // ==========================================
 // 5. EVENT LISTENERS (FORM & FILTER)
 // ==========================================
+
+// --- FITUR TANGGAL BARU ---
+const dateInput = document.getElementById('date');
+
+// Hanya isi dengan tanggal hari ini JIKA diklik (focus) dan kolom masih kosong
+dateInput.addEventListener('focus', function () {
+    if (!this.value) {
+        this.valueAsDate = new Date();
+    }
+});
+// --------------------------
+
 document.getElementById('transactionForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const type = document.querySelector('input[name="type"]:checked').value;
@@ -221,11 +218,12 @@ document.getElementById('transactionForm').addEventListener('submit', function (
     const description = document.getElementById('description').value;
 
     transactions.push({ id: Date.now(), type, amount, category, date, description });
+
+    // Ini otomatis mereset semua form menjadi kosong (termasuk tanggal kembali jadi mm/dd/yyyy)
     this.reset();
-    document.getElementById('date').valueAsDate = new Date();
 
     updateApp();
-    resetChartTimer(); // Reset timer saat transaksi baru agar tidak lompat
+    resetChartTimer();
     alert('Transaksi berhasil ditambahkan!');
 });
 
@@ -248,5 +246,5 @@ filterBtns.forEach(btn => {
 document.addEventListener('DOMContentLoaded', () => {
     initChart();
     updateApp();
-    resetChartTimer(); // Mulai rotasi otomatis chart
+    resetChartTimer();
 });
