@@ -1,15 +1,17 @@
 // ==========================================
-// 1. DATA & STATE MANAGEMENT
+// 1. DATA & STATE MANAGEMENT (LOCAL STORAGE)
 // ==========================================
-let transactions = [
-    { id: 1, type: 'income', amount: 5000000, category: 'Gaji', date: '2023-10-01', description: 'Gaji Bulan Oktober' },
-    { id: 2, type: 'expense', amount: 150000, category: 'Makanan', date: '2023-10-02', description: 'Makan Bareng Teman' },
-    { id: 3, type: 'expense', amount: 50000, category: 'Transportasi', date: '2023-10-03', description: 'Isi Bensin' },
-    { id: 4, type: 'income', amount: 300000, category: 'Lainnya', date: '2023-10-05', description: 'Jual Barang Bekas' },
-    { id: 5, type: 'expense', amount: 200000, category: 'Belanja', date: '2023-10-06', description: 'Beli Kemeja Baru' }
-];
+const STORAGE_KEY = 'DOMPETKU_DATA';
 
-let currentFilterType = 'all'; // State filter tipe aktif (all, income, expense)
+// Mengambil data dari localStorage, jika kosong maka gunakan array kosong []
+let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+let currentFilterType = 'all'; // State filter tipe aktif
+
+// Fungsi untuk menyimpan data terbaru ke localStorage
+const saveTransactions = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+};
 
 // Helper Formatter
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
@@ -50,7 +52,7 @@ themeToggleBtn.addEventListener('click', () => {
 // ==========================================
 const updateApp = () => {
     updateSummary();
-    renderTransactions(); // Panggil tanpa param, data diambil dari State & DOM
+    renderTransactions();
     updateChartData();
 };
 
@@ -62,38 +64,32 @@ const updateSummary = () => {
     document.getElementById('totalBalance').innerText = formatRupiah(income - expense);
 };
 
-// --- LOGIKA FILTER TRANSAKSI YANG DIPERBARUI ---
+// Fungsi Render Transaksi
 const renderTransactions = () => {
     const listContainer = document.getElementById('transactionList');
     listContainer.innerHTML = '';
 
-    // 1. Filter Berdasarkan Kategori Tipe Aktif
+    // 1. Filter Tipe
     let filteredData = currentFilterType === 'all' ? transactions : transactions.filter(t => t.type === currentFilterType);
 
-    // 2. Filter Berdasarkan Input Tanggal (Custom Date Filter)
+    // 2. Filter Tanggal
     const startDate = document.getElementById('filterStartDate').value;
     const endDate = document.getElementById('filterEndDate').value;
 
-    if (startDate) {
-        filteredData = filteredData.filter(t => t.date >= startDate);
-    }
-    if (endDate) {
-        filteredData = filteredData.filter(t => t.date <= endDate);
-    }
+    if (startDate) filteredData = filteredData.filter(t => t.date >= startDate);
+    if (endDate) filteredData = filteredData.filter(t => t.date <= endDate);
 
-    // 3. Urutkan berdasarkan tanggal terbaru (Descending)
+    // 3. Urutkan berdasarkan tanggal terbaru
     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Jika kosong
     if (filteredData.length === 0) {
         listContainer.innerHTML = `<div class="text-center text-slate-500 dark:text-slate-400 py-8">
             <i class="ph ph-receipt text-4xl mb-2"></i>
-            <p>Tidak ada transaksi yang sesuai.</p>
+            <p>Belum ada transaksi.</p>
         </div>`;
         return;
     }
 
-    // Render Data
     filteredData.forEach(trx => {
         const isIncome = trx.type === 'income';
         const colorClass = isIncome ? 'text-income bg-emerald-50 dark:bg-emerald-500/10' : 'text-expense bg-rose-50 dark:bg-rose-500/10';
@@ -104,19 +100,36 @@ const renderTransactions = () => {
         const itemHTML = `
             <div class="flex justify-between items-center p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border border-transparent hover:border-slate-100 dark:hover:border-slate-600 group">
                 <div class="flex items-center gap-4">
-                    <div class="${colorClass} w-12 h-12 rounded-full flex items-center justify-center text-2xl"><i class="ph ${iconClass}"></i></div>
+                    <div class="${colorClass} w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center text-xl md:text-2xl"><i class="ph ${iconClass}"></i></div>
                     <div>
-                        <h4 class="font-semibold text-sm md:text-base">${trx.description}</h4>
+                        <h4 class="font-semibold text-sm md:text-base line-clamp-1">${trx.description}</h4>
                         <div class="flex items-center gap-2 text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                             <span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">${trx.category}</span>
                             <span>•</span><span>${formatDate(trx.date)}</span>
                         </div>
                     </div>
                 </div>
-                <div class="font-bold ${amountColor} text-sm md:text-base">${amountPrefix} ${formatRupiah(trx.amount)}</div>
+                <div class="flex items-center gap-3 md:gap-4">
+                    <div class="font-bold ${amountColor} text-sm md:text-base text-right whitespace-nowrap">
+                        ${amountPrefix} ${formatRupiah(trx.amount)}
+                    </div>
+                    <!-- Tombol Hapus -->
+                    <button onclick="deleteTransaction(${trx.id})" class="text-slate-400 hover:text-rose-500 transition p-1 bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 rounded-md">
+                        <i class="ph ph-trash text-lg"></i>
+                    </button>
+                </div>
             </div>`;
         listContainer.insertAdjacentHTML('beforeend', itemHTML);
     });
+};
+
+// Fungsi Global untuk Menghapus Transaksi
+window.deleteTransaction = (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveTransactions(); // Simpan perubahan ke storage
+        updateApp();        // Render ulang UI
+    }
 };
 
 
@@ -153,6 +166,16 @@ const updateChartData = () => {
     myChart.data.datasets[0].borderColor = isDark ? '#1e293b' : '#fff';
     myChart.data.datasets[0].borderWidth = isDark ? 2 : 0;
 
+    // JIKA DATA KOSONG (Mencegah grafik error / tidak terlihat)
+    if (transactions.length === 0) {
+        myChart.data.labels = ['Belum ada data'];
+        myChart.data.datasets[0].data = [1];
+        myChart.data.datasets[0].backgroundColor = isDark ? ['#334155'] : ['#E2E8F0']; // Warna abu-abu
+        myChart.update();
+        return;
+    }
+
+    // JIKA ADA DATA
     if (currentChartMode === 'type') {
         const income = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
         const expense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
@@ -181,6 +204,8 @@ const resetChartTimer = () => {
     clearInterval(progressInterval);
 
     const progressBar = document.getElementById('chartTimerBar');
+    if (!progressBar) return;
+
     progressBar.style.width = '0%';
 
     let width = 0;
@@ -225,7 +250,7 @@ dateInput.addEventListener('focus', function () {
     if (!this.value) this.valueAsDate = new Date();
 });
 
-// Submit Form Baru
+// SUBMIT FORM BARU
 document.getElementById('transactionForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const type = document.querySelector('input[name="type"]:checked').value;
@@ -234,43 +259,42 @@ document.getElementById('transactionForm').addEventListener('submit', function (
     const date = document.getElementById('date').value;
     const description = document.getElementById('description').value;
 
+    // Tambah Data Baru
     transactions.push({ id: Date.now(), type, amount, category, date, description });
+
+    // SIMPAN KE LOCAL STORAGE
+    saveTransactions();
 
     this.reset();
     updateApp();
     resetChartTimer();
-    alert('Transaksi berhasil ditambahkan!');
 });
 
-// Filter Button Tipe (Semua / Pemasukan / Pengeluaran)
+// Filter Button Tipe
 const filterBtns = document.querySelectorAll('.filter-btn');
 filterBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // Hapus style aktif dari semua tombol
         filterBtns.forEach(b => {
             b.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
             b.classList.add('text-slate-500', 'dark:text-slate-400');
         });
-
-        // Tambahkan style aktif ke tombol yang diklik
         e.target.classList.remove('text-slate-500', 'dark:text-slate-400');
         e.target.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
 
-        // Set state dan render ulang
         currentFilterType = e.target.getAttribute('data-filter');
         renderTransactions();
     });
 });
 
-// --- EVENT FILTER TANGGAL ---
+// Filter Tanggal
 document.getElementById('btnApplyDateFilter').addEventListener('click', () => {
-    renderTransactions(); // Akan merender berdasar tanggal yg diinput & tipe aktif
+    renderTransactions();
 });
 
 document.getElementById('btnResetDateFilter').addEventListener('click', () => {
     document.getElementById('filterStartDate').value = '';
     document.getElementById('filterEndDate').value = '';
-    renderTransactions(); // Kembalikan list ke normal
+    renderTransactions();
 });
 
 
