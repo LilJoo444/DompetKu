@@ -54,13 +54,20 @@ const updateApp = () => {
 };
 
 const updateSummary = () => {
-    const monthlyData = getMonthlyData(); 
-    const income = monthlyData.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
-    const expense = monthlyData.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
-    
-    document.getElementById('totalIncome').innerText = formatRupiah(income);
-    document.getElementById('totalExpense').innerText = formatRupiah(expense);
-    document.getElementById('totalBalance').innerText = formatRupiah(income - expense);
+    const monthlyData = getMonthlyData();
+
+    // Total Saldo Dihitung Semua Waktu (Biar saldo bulan lalu kebawa ke bulan ini)
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+    const globalBalance = totalIncome - totalExpense;
+
+    // Pemasukan & Pengeluaran Dihitung Cuma Bulan Ini Saja
+    const monthlyIncome = monthlyData.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+    const monthlyExpense = monthlyData.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+
+    document.getElementById('totalBalance').innerText = formatRupiah(globalBalance);
+    document.getElementById('totalIncome').innerText = formatRupiah(monthlyIncome);
+    document.getElementById('totalExpense').innerText = formatRupiah(monthlyExpense);
 };
 
 const updateBudgetUI = () => {
@@ -305,21 +312,43 @@ document.getElementById('amountDisplay').addEventListener('keyup', function() {
     else this.value = '';
 });
 
+// Tutup Modal Error
+document.getElementById('btnOkayError').addEventListener('click', () => {
+    closeModal('errorModal', 'errorBackdrop', 'errorModalContent');
+});
+
 // Submit Form Transaksi
 document.getElementById('transactionForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const type = document.querySelector('input[name="type"]:checked').value;
     const rawAmount = document.getElementById('amountDisplay').value.replace(/\./g, '');
-    const amount = parseFloat(rawAmount); 
+    const amount = parseFloat(rawAmount);
     const category = document.getElementById('category').value;
     const date = document.getElementById('date').value;
     const description = document.getElementById('description').value;
 
+    // --- LOGIC VALIDASI SALDO ---
+    if (type === 'expense') {
+        const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+        const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+        const currentBalance = totalIncome - totalExpense;
+
+        if (amount > currentBalance) {
+            // Update teks modal error dengan sisa saldo saat ini
+            document.getElementById('errorSaldoAmount').innerText = formatRupiah(currentBalance);
+            openModal('errorModal', 'errorBackdrop', 'errorModalContent');
+            return; // Hentikan proses simpan
+        }
+    }
+
+    // Kalau lolos validasi, simpan data
     transactions.push({ id: Date.now(), type, amount, category, date, description });
     saveTransactions();
     this.reset();
-    document.getElementById('date').valueAsDate = new Date(); 
-    updateApp(); resetChartTimer();
+    document.getElementById('amountDisplay').value = ''; // Kosongkan input nominal
+    document.getElementById('date').valueAsDate = new Date();
+    updateApp();
+    resetChartTimer();
 });
 
 // Filter & Data
