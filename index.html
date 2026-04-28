@@ -264,6 +264,79 @@
 
     </main>
 
+    <!-- ======================================= -->
+    <!-- CUSTOM MODALS (POPUP)                   -->
+    <!-- ======================================= -->
+    
+    <!-- Modal Atur Budget -->
+    <div id="budgetModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <!-- Backdrop Blur -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="budgetBackdrop">
+        </div>
+    
+        <!-- Modal Content -->
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 opacity-0 transition-all duration-300"
+            id="budgetModalContent">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-primary/10 text-primary p-2 rounded-full">
+                    <i class="ph ph-target text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Atur Batas Budget</h3>
+            </div>
+    
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Masukkan batas maksimal pengeluaranmu untuk bulan
+                ini.</p>
+    
+            <div>
+                <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Nominal Budget (Rp)</label>
+                <input type="text" id="budgetModalInput" placeholder="Contoh: 1.500.000"
+                    class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition font-semibold text-lg text-slate-800 dark:text-white">
+            </div>
+    
+            <div class="flex gap-3 mt-6">
+                <button id="btnCancelBudget"
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition">
+                    Batal
+                </button>
+                <button id="btnSaveBudget"
+                    class="flex-1 bg-primary hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <!-- Backdrop Blur -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="deleteBackdrop">
+        </div>
+    
+        <!-- Modal Content -->
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 opacity-0 transition-all duration-300"
+            id="deleteModalContent">
+            <div class="flex flex-col items-center text-center">
+                <div class="bg-rose-100 dark:bg-rose-500/20 text-rose-500 p-3 rounded-full mb-4">
+                    <i class="ph ph-warning-circle text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-1">Hapus Transaksi?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Data yang dihapus tidak dapat dikembalikan lagi.
+                    Yakin ingin melanjutkan?</p>
+            </div>
+    
+            <div class="flex gap-3">
+                <button id="btnCancelDelete"
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition">
+                    Batal
+                </button>
+                <button id="btnConfirmDelete"
+                    class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-medium py-2.5 rounded-lg transition">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 
