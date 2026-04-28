@@ -9,20 +9,12 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- CDN untuk jsPDF (Export PDF) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#4F46E5', income: '#10B981', expense: '#F43F5E', bglight: '#F8FAFC' }
-                }
-            }
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { primary: '#4F46E5', income: '#10B981', expense: '#F43F5E', bglight: '#F8FAFC' } } }
         }
     </script>
     <style>
@@ -65,45 +57,85 @@
 
 <body class="bg-bglight dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans antialiased pb-20 md:pb-8">
 
-    <!-- ======================================= -->
-    <!-- HALAMAN LOGIN / REGISTER                -->
-    <!-- ======================================= -->
-    <div id="loginScreen" class="fixed inset-0 z-[200] bg-white dark:bg-slate-900 flex items-center justify-center p-4">
-        <div
-            class="w-full max-w-sm bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700">
-            <div class="text-center mb-6">
-                <div
-                    class="bg-primary text-white w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-primary/30">
-                    <i class="ph ph-wallet text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-bold">DompetKu</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" id="loginSubtext">Silakan atur akun Anda</p>
+<!-- ======================================= -->
+<!-- HALAMAN LOGIN / REGISTER                -->
+<!-- ======================================= -->
+<div id="loginScreen"
+    class="fixed inset-0 z-[200] bg-white dark:bg-slate-900 flex items-center justify-center p-4 overflow-y-auto">
+    <div
+        class="w-full max-w-sm bg-slate-50 dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 my-auto">
+        <div class="text-center mb-6">
+            <div
+                class="bg-primary text-white w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-primary/30">
+                <i class="ph ph-wallet text-3xl"></i></div>
+            <h1 class="text-2xl font-bold">DompetKu</h1>
+
+            <div class="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-lg mt-4 mb-2">
+                <button id="tabLogin"
+                    class="flex-1 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-slate-600 shadow-sm transition text-slate-800 dark:text-white">Masuk</button>
+                <button id="tabRegister"
+                    class="flex-1 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 transition">Daftar</button>
             </div>
-
-            <form id="authForm" class="space-y-4">
-                <div id="nameFieldGroup">
-                    <label class="block text-xs font-medium text-slate-500 mb-1">Nama Panggilan</label>
-                    <input type="text" id="authName" placeholder="Contoh: Budi"
-                        class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-1">PIN Rahasia (Angka)</label>
-                    <input type="password" id="authPin" placeholder="Masukkan PIN" required pattern="[0-9]*"
-                        class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white text-center text-xl tracking-[0.5em]">
-                </div>
-                <button type="submit"
-                    class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-4">
-                    Masuk
-                </button>
-            </form>
         </div>
+
+        <!-- KOTAK ALERT KHUSUS LOGIN/DAFTAR (Disembunyikan default) -->
+        <div id="authAlert"
+            class="hidden mb-4 p-3 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-sm flex items-start gap-2">
+            <i class="ph ph-warning-circle text-lg mt-0.5 flex-shrink-0"></i>
+            <span id="authAlertText">Pesan error disini</span>
+        </div>
+
+        <!-- FORM LOGIN -->
+        <form id="formLogin" class="space-y-4">
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Email</label>
+                <input type="email" id="loginEmail" placeholder="contoh@gmail.com" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Password</label>
+                <input type="password" id="loginPassword" placeholder="Masukkan kata sandi" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <button type="submit"
+                class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-4">Masuk</button>
+        </form>
+
+        <!-- FORM REGISTER -->
+        <form id="formRegister" class="space-y-4 hidden">
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Email (@gmail.com)</label>
+                <input type="email" id="regEmail" placeholder="contoh@gmail.com" pattern=".*@gmail\.com$"
+                    title="Harus menggunakan @gmail.com" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">DompetID (Username Display)</label>
+                <input type="text" id="regDompetId" placeholder="Contoh: Budi Hartono" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Password</label>
+                <input type="password" id="regPassword" placeholder="Buat kata sandi" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">Konfirmasi Password</label>
+                <input type="password" id="regConfirmPassword" placeholder="Ulangi kata sandi" required
+                    class="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+            </div>
+            <button type="submit"
+                class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-4">Buat
+                Akun</button>
+        </form>
     </div>
+</div>
 
     <!-- ======================================= -->
-    <!-- APLIKASI UTAMA (Disembunyikan dlu)      -->
+    <!-- APLIKASI UTAMA                          -->
     <!-- ======================================= -->
     <div id="mainApp" class="hidden">
-        <!-- Navbar -->
+        <!-- Navbar Tetap -->
         <nav
             class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-100 dark:border-slate-700/50 sticky top-0 z-40">
             <div class="max-w-6xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
@@ -112,51 +144,57 @@
                             class="ph ph-wallet text-lg md:text-xl"></i></div>
                     <h1 class="text-lg md:text-xl font-bold tracking-tight">DompetKu</h1>
                 </div>
-                <div class="flex items-center gap-2 md:gap-3">
+                <div class="flex items-center gap-2 md:gap-3 relative">
                     <button id="themeToggle"
-                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
-                        <i class="ph ph-moon text-lg md:text-xl" id="themeIcon"></i>
-                    </button>
-                    <button id="btnLogout"
-                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-500 flex items-center justify-center font-semibold cursor-pointer transition hover:bg-rose-200"
-                        title="Keluar">
-                        <i class="ph ph-sign-out text-lg"></i>
-                    </button>
+                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition"><i
+                            class="ph ph-moon text-lg md:text-xl" id="themeIcon"></i></button>
+
+                    <div class="relative">
+                        <button id="profileBtn"
+                            class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center cursor-pointer transition border-2 border-transparent hover:border-primary overflow-hidden">
+                            <img id="navAvatar" src="" class="w-full h-full object-cover hidden" alt="Avatar">
+                            <span id="navInitial" class="text-primary font-semibold text-sm md:text-base">U</span>
+                        </button>
+
+                        <div id="profileDropdown"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 z-50 transform origin-top-right transition-all">
+                            <button id="btnManageAccount"
+                                class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2"><i
+                                    class="ph ph-user-circle text-lg"></i> Manage Account</button>
+                            <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+                            <button id="btnLogout"
+                                class="w-full text-left px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2"><i
+                                    class="ph ph-sign-out text-lg"></i> Keluar</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Main Container -->
-        <main class="max-w-6xl mx-auto px-4 mt-6 md:mt-8 space-y-6">
-
-            <!-- Header Section & Export/Import -->
+        <!-- HALAMAN 1: DASHBOARD -->
+        <main id="dashboardPage" class="max-w-6xl mx-auto px-4 mt-6 md:mt-8 space-y-6">
+            <!-- Header Section -->
             <div
                 class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
                 <div class="w-full md:w-auto">
                     <h2 class="text-xl md:text-2xl font-semibold" id="greetingText">Halo! 👋</h2>
-                    <div class="flex items-center gap-2 mt-2 w-full">
-                        <input type="month" id="monthFilter"
+                    <div class="flex items-center gap-2 mt-2 w-full"><input type="month" id="monthFilter"
                             class="flex-1 md:flex-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 md:py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer color-scheme-light dark:[color-scheme:dark]">
                     </div>
                 </div>
-
-                <!-- REVISI 3: Export PDF, Export JSON, Import JSON -->
                 <div class="grid grid-cols-3 md:flex gap-2 w-full md:w-auto">
                     <button id="btnExportPDF"
-                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <i class="ph ph-file-pdf text-lg text-rose-500"></i> <span class="hidden md:inline">Export
-                            PDF</span><span class="md:hidden">PDF</span>
-                    </button>
+                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm"><i
+                            class="ph ph-file-pdf text-lg text-rose-500"></i> <span class="hidden md:inline">Export
+                            PDF</span><span class="md:hidden">PDF</span></button>
                     <button id="btnExportJSON"
-                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <i class="ph ph-database text-lg text-primary"></i> <span class="hidden md:inline">Backup
-                            Data</span><span class="md:hidden">Backup</span>
-                    </button>
+                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm"><i
+                            class="ph ph-database text-lg text-primary"></i> <span class="hidden md:inline">Backup
+                            Data</span><span class="md:hidden">Backup</span></button>
                     <button id="btnImport"
-                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <i class="ph ph-download-simple text-lg text-income"></i> <span
-                            class="hidden md:inline">Import</span><span class="md:hidden">Import</span>
-                    </button>
+                        class="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-2 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm"><i
+                            class="ph ph-download-simple text-lg text-income"></i> <span
+                            class="hidden md:inline">Import</span><span class="md:hidden">Import</span></button>
                     <input type="file" id="fileInput" accept=".json" class="hidden">
                 </div>
             </div>
@@ -167,7 +205,6 @@
                 <p id="insightText" class="leading-relaxed"></p>
             </div>
 
-            <!-- SUMMARY CARDS -->
             <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div
                     class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 sm:col-span-2 md:col-span-1">
@@ -195,7 +232,6 @@
                 </div>
             </section>
 
-            <!-- Budgeting -->
             <section
                 class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
                 <div class="flex justify-between items-start md:items-end mb-2 flex-col md:flex-row gap-2 md:gap-0">
@@ -213,62 +249,51 @@
                 </div>
             </section>
 
-            <!-- MIDDLE SECTION -->
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Grafik -->
                 <div
                     class="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 lg:col-span-2 flex flex-col items-center">
                     <div class="w-full flex justify-between items-center mb-4">
                         <h3 class="text-base md:text-lg font-semibold">Statistik</h3>
-                        <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
-                            <button
+                        <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg"><button
                                 class="chart-toggle-btn active-chart px-3 py-1 text-xs font-medium rounded-md bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition"
-                                data-target="type">Tipe</button>
-                            <button
+                                data-target="type">Tipe</button><button
                                 class="chart-toggle-btn px-3 py-1 text-xs font-medium rounded-md text-slate-500 dark:text-slate-400 transition"
-                                data-target="category">Kategori</button>
-                        </div>
+                                data-target="category">Kategori</button></div>
                     </div>
                     <div
                         class="relative w-full max-w-[240px] md:max-w-[320px] aspect-square flex-grow flex items-center justify-center">
-                        <canvas id="financeChart"></canvas>
-                    </div>
+                        <canvas id="financeChart"></canvas></div>
                     <div class="w-full h-1 bg-slate-100 dark:bg-slate-700 mt-4 rounded-full overflow-hidden">
                         <div id="chartTimerBar"
                             class="h-full bg-primary/30 w-0 transition-all duration-[100ms] ease-linear"></div>
                     </div>
                 </div>
 
-                <!-- Form Tambah Transaksi -->
+                <!-- Form -->
                 <div class="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50"
                     id="formSection">
                     <h3 class="text-base md:text-lg font-semibold mb-4 border-b dark:border-slate-700 pb-2">Tambah
                         Transaksi</h3>
                     <form id="transactionForm" class="space-y-4">
                         <div class="grid grid-cols-2 gap-2 md:gap-3 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="type" value="income" class="peer sr-only" checked>
+                            <label class="cursor-pointer"><input type="radio" name="type" value="income"
+                                    class="peer sr-only" checked>
                                 <div
                                     class="text-center py-2 rounded-md text-xs md:text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-income peer-checked:shadow-sm text-slate-500">
                                     Pemasukan</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="type" value="expense" class="peer sr-only">
+                            </label><label class="cursor-pointer"><input type="radio" name="type" value="expense"
+                                    class="peer sr-only">
                                 <div
                                     class="text-center py-2 rounded-md text-xs md:text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-expense peer-checked:shadow-sm text-slate-500">
                                     Pengeluaran</div>
-                            </label>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-500 mb-1">Nominal (Rp)</label>
-                            <input type="text" id="amountDisplay" placeholder="0" required
+                            </label></div>
+                        <div><label class="block text-xs text-slate-500 mb-1">Nominal (Rp)</label><input type="text"
+                                id="amountDisplay" placeholder="0" required
                                 class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 md:px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 font-semibold text-lg text-slate-800 dark:text-white">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs text-slate-500 mb-1">Kategori</label>
-                                <!-- REVISI 2: Pilihan Default Kosong -->
-                                <select id="category"
+                            <div><label class="block text-xs text-slate-500 mb-1">Kategori</label><select id="category"
                                     class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none text-slate-800 dark:text-white">
                                     <option value="" selected disabled>-- Pilih Kategori --</option>
                                     <option value="Gaji">Gaji</option>
@@ -277,56 +302,136 @@
                                     <option value="Belanja">Belanja</option>
                                     <option value="Tagihan">Tagihan</option>
                                     <option value="Lainnya">Lainnya</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs text-slate-500 mb-1">Tanggal</label>
-                                <input type="date" id="date" required
+                                </select></div>
+                            <div><label class="block text-xs text-slate-500 mb-1">Tanggal</label><input type="date"
+                                    id="date" required
                                     class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 color-scheme-light dark:[color-scheme:dark] text-slate-800 dark:text-white">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-slate-500 mb-1">Catatan</label>
-                            <input type="text" id="description" placeholder="Contoh: Makan siang" required
+                        <div><label class="block text-xs text-slate-500 mb-1">Catatan</label><input type="text"
+                                id="description" placeholder="Contoh: Makan siang" required
                                 class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 md:px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
                         </div>
                         <button type="submit"
-                            class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg mt-2 flex justify-center items-center gap-2">
-                            <i class="ph ph-plus-circle text-lg"></i> Simpan Transaksi
-                        </button>
+                            class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg mt-2 flex justify-center items-center gap-2"><i
+                                class="ph ph-plus-circle text-lg"></i> Simpan Transaksi</button>
                     </form>
                 </div>
             </section>
 
-            <!-- HISTORY SECTION -->
             <section
-                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-4 md:p-6">
+                class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-4 md:p-6 mb-20 md:mb-0">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                     <h3 class="text-base md:text-lg font-semibold">Riwayat Transaksi</h3>
                     <div
                         class="flex gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scroll">
                         <button
                             class="filter-btn active px-3 py-1.5 text-xs md:text-sm rounded-md bg-white dark:bg-slate-700 shadow-sm font-medium whitespace-nowrap"
-                            data-filter="all">Semua</button>
-                        <button
+                            data-filter="all">Semua</button><button
                             class="filter-btn px-3 py-1.5 text-xs md:text-sm rounded-md font-medium text-slate-500 whitespace-nowrap"
-                            data-filter="income">Pemasukan</button>
-                        <button
+                            data-filter="income">Pemasukan</button><button
                             class="filter-btn px-3 py-1.5 text-xs md:text-sm rounded-md font-medium text-slate-500 whitespace-nowrap"
-                            data-filter="expense">Pengeluaran</button>
-                    </div>
+                            data-filter="expense">Pengeluaran</button></div>
                 </div>
                 <div id="transactionList" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 md:pr-2"></div>
             </section>
+
+            <!-- Mobile FAB -->
+            <a href="#formSection"
+                class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(79,70,229,0.4)] z-40"><i
+                    class="ph ph-plus text-2xl"></i></a>
         </main>
 
-        <a href="#formSection"
-            class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(79,70,229,0.4)] z-40">
-            <i class="ph ph-plus text-2xl"></i>
-        </a>
+        <!-- HALAMAN 2: MANAGE ACCOUNT (SETTINGS) -->
+        <main id="settingsPage" class="hidden max-w-4xl mx-auto px-4 mt-6 md:mt-8 space-y-6 pb-10">
+
+            <div class="flex items-center gap-3 mb-6">
+                <button id="btnBackToDashboard"
+                    class="w-10 h-10 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </button>
+                <h2 class="text-2xl font-bold">Pengaturan Akun</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Bagian Informasi Profile -->
+                <section
+                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-6 h-fit">
+                    <h3
+                        class="text-lg font-semibold border-b border-slate-100 dark:border-slate-700 pb-3 mb-5 flex items-center gap-2">
+                        <i class="ph ph-user text-primary"></i> Informasi Profile</h3>
+
+                    <form id="formUpdateProfile" class="space-y-5">
+                        <div class="flex flex-col items-center gap-2 mb-2">
+                            <div class="relative w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 overflow-hidden flex items-center justify-center cursor-pointer group shadow-sm"
+                                onclick="document.getElementById('editAvatarInput').click()">
+                                <img id="editAvatarPreview" src="" class="w-full h-full object-cover hidden"
+                                    alt="Preview">
+                                <span id="editAvatarInitial" class="text-3xl font-bold text-slate-400">U</span>
+                                <div
+                                    class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                    <i class="ph ph-camera text-white text-2xl"></i></div>
+                            </div>
+                            <p class="text-xs text-slate-500">Klik gambar untuk mengubah foto</p>
+                            <input type="file" id="editAvatarInput" accept="image/*" class="hidden">
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">DompetID</label>
+                            <input type="text" id="editDompetId" required
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+                            <input type="email" id="editEmail" pattern=".*@gmail\.com$" required
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition mt-2">Simpan
+                            Perubahan</button>
+                    </form>
+                </section>
+
+                <!-- Bagian Keamanan Akun -->
+                <section
+                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-6 h-fit">
+                    <h3
+                        class="text-lg font-semibold border-b border-slate-100 dark:border-slate-700 pb-3 mb-5 flex items-center gap-2">
+                        <i class="ph ph-lock-key text-rose-500"></i> Keamanan Akun</h3>
+
+                    <form id="formUpdatePassword" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kata Sandi
+                                Saat Ini</label>
+                            <input type="password" id="currentPassword" required placeholder="Masukkan sandi lama"
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kata Sandi
+                                Baru</label>
+                            <input type="password" id="newPassword" required placeholder="Buat sandi baru"
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Konfirmasi
+                                Sandi Baru</label>
+                            <input type="password" id="confirmNewPassword" required placeholder="Ulangi sandi baru"
+                                class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-white">
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-rose-500 hover:bg-rose-600 text-white font-medium py-2.5 rounded-lg transition mt-4">Perbarui
+                            Kata Sandi</button>
+                    </form>
+                </section>
+            </div>
+        </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals Utility (Budget, Delete, Error) -->
     <div id="budgetModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity" id="budgetBackdrop">
         </div>
@@ -335,18 +440,15 @@
             <div class="flex items-center gap-3 mb-3">
                 <div class="bg-primary/10 text-primary p-2 rounded-full"><i class="ph ph-target text-xl"></i></div>
                 <h3 class="font-semibold text-slate-800 dark:text-white">Atur Batas Budget</h3>
-            </div>
-            <input type="text" id="budgetModalInput" placeholder="Contoh: 1.500.000"
+            </div><input type="text" id="budgetModalInput" placeholder="Contoh: 1.500.000"
                 class="w-full bg-slate-50 border rounded-lg px-4 py-2 text-lg font-semibold dark:bg-slate-700 dark:border-slate-600 dark:text-white mt-2">
-            <div class="flex gap-2 mt-5">
-                <button id="btnCancelBudget"
-                    class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-sm dark:bg-slate-700 dark:text-white">Batal</button>
-                <button id="btnSaveBudget"
+            <div class="flex gap-2 mt-5"><button id="btnCancelBudget"
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-sm dark:bg-slate-700 dark:text-white">Batal</button><button
+                    id="btnSaveBudget"
                     class="flex-1 bg-primary hover:bg-indigo-700 text-white py-2 rounded-lg text-sm">Simpan</button>
             </div>
         </div>
     </div>
-
     <div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity" id="deleteBackdrop">
         </div>
@@ -355,26 +457,21 @@
             <div class="bg-rose-100 text-rose-500 p-3 rounded-full mb-4 inline-block"><i
                     class="ph ph-trash text-3xl"></i></div>
             <h3 class="font-semibold text-slate-800 dark:text-white mb-1">Hapus Transaksi?</h3>
-            <div class="flex gap-2 mt-5">
-                <button id="btnCancelDelete"
-                    class="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg text-sm dark:bg-slate-700 dark:text-white">Batal</button>
-                <button id="btnConfirmDelete"
-                    class="flex-1 bg-rose-500 text-white py-2 rounded-lg text-sm">Hapus</button>
+            <div class="flex gap-2 mt-5"><button id="btnCancelDelete"
+                    class="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg text-sm dark:bg-slate-700 dark:text-white">Batal</button><button
+                    id="btnConfirmDelete" class="flex-1 bg-rose-500 text-white py-2 rounded-lg text-sm">Hapus</button>
             </div>
         </div>
     </div>
-
-    <!-- REVISI 2: Modal Error Generic (Bisa buat saldo, bisa buat Kategori) -->
     <div id="errorModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm opacity-0 transition-opacity" id="errorBackdrop">
         </div>
         <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-[320px] p-6 text-center transform scale-95 opacity-0 transition-all duration-300"
             id="errorModalContent">
-            <div class="bg-rose-100 text-rose-500 p-3 rounded-full mb-4 inline-block"><i
+            <div class="bg-rose-100 text-rose-500 p-3 rounded-full mb-4 inline-block" id="errorIcon"><i
                     class="ph ph-x-circle text-3xl"></i></div>
             <h3 class="font-semibold text-slate-800 dark:text-white mb-1" id="errorModalTitle">Oops!</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6" id="errorModalDesc"></p>
-            <button id="btnOkayError"
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6" id="errorModalDesc"></p><button id="btnOkayError"
                 class="w-full bg-slate-100 text-slate-700 py-2.5 rounded-lg text-sm dark:bg-slate-700 dark:text-white font-medium">Mengerti</button>
         </div>
     </div>
