@@ -1,22 +1,26 @@
 // ==========================================
-// 1. DATA & STATE MANAGEMENT (LOCAL STORAGE)
+// 1. DATA & STATE MANAGEMENT
 // ==========================================
 const STORAGE_KEY = 'DOMPETKU_DATA';
+const BUDGET_KEY = 'DOMPETKU_BUDGET';
 
-// Mengambil data dari localStorage, jika kosong maka gunakan array kosong []
 let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+let monthlyBudget = parseFloat(localStorage.getItem(BUDGET_KEY)) || 0;
 
-let currentFilterType = 'all'; // State filter tipe aktif
+let currentFilterType = 'all';
 
-// Fungsi untuk menyimpan data terbaru ke localStorage
-const saveTransactions = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-};
+// NEW FEATURE: State Bulan (Default bulan saat ini YYYY-MM)
+const today = new Date();
+let currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+document.getElementById('monthFilter').value = currentMonth;
+
+const saveTransactions = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+const saveBudget = () => localStorage.setItem(BUDGET_KEY, monthlyBudget);
 
 // Helper Formatter
 const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+const formatNumberDots = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-
 
 // ==========================================
 // 2. DARK MODE LOGIC
@@ -28,8 +32,6 @@ const htmlElement = document.documentElement;
 if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     htmlElement.classList.add('dark');
     themeIcon.classList.replace('ph-moon', 'ph-sun');
-} else {
-    htmlElement.classList.remove('dark');
 }
 
 themeToggleBtn.addEventListener('click', () => {
@@ -37,85 +39,138 @@ themeToggleBtn.addEventListener('click', () => {
     const isDark = htmlElement.classList.contains('dark');
     localStorage.theme = isDark ? 'dark' : 'light';
     themeIcon.classList.replace(isDark ? 'ph-moon' : 'ph-sun', isDark ? 'ph-sun' : 'ph-moon');
-
-    if (myChart) {
-        myChart.options.plugins.legend.labels.color = isDark ? '#e2e8f0' : '#475569';
-        myChart.data.datasets[0].borderColor = isDark ? '#1e293b' : '#fff';
-        myChart.data.datasets[0].borderWidth = isDark ? 2 : 0;
-        myChart.update();
-    }
+    if (myChart) updateChartData(); // Update warna chart
 });
 
+// ==========================================
+// 3. UI RENDERER & NEW FEATURES
+// ==========================================
 
-// ==========================================
-// 3. UI RENDERER (CARD & LIST)
-// ==========================================
+// Ambil data khusus bulan yang dipilih
+const getMonthlyData = () => {
+    return transactions.filter(t => t.date.startsWith(currentMonth));
+};
+
 const updateApp = () => {
     updateSummary();
+    updateBudgetUI();
+    generateInsights();
     renderTransactions();
     updateChartData();
 };
 
+// Update Card
 const updateSummary = () => {
-    const income = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
-    const expense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+    const monthlyData = getMonthlyData(); // Cuma itung bulan ini
+    const income = monthlyData.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+    const expense = monthlyData.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+
     document.getElementById('totalIncome').innerText = formatRupiah(income);
     document.getElementById('totalExpense').innerText = formatRupiah(expense);
     document.getElementById('totalBalance').innerText = formatRupiah(income - expense);
 };
 
-// Fungsi Render Transaksi
+// NEW FEATURE: Update Budget Progress
+const updateBudgetUI = () => {
+    const monthlyData = getMonthlyData();
+    const expense = monthlyData.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+
+    const bar = document.getElementById('budgetProgressBar');
+    const statusText = document.getElementById('budgetStatusText');
+
+    if (monthlyBudget <= 0) {
+        bar.style.width = '0%';
+        statusText.innerText = "Belum ada budget di-set.";
+        return;
+    }
+
+    let percentage = (expense / monthlyBudget) * 100;
+    if (percentage > 100) percentage = 100;
+
+    bar.style.width = percentage + '%';
+
+    // Ubah warna bar sesuai persentase
+    if (percentage < 70) {
+        bar.className = 'h-full bg-income w-0 transition-all duration-500';
+    } else if (percentage < 90) {
+        bar.className = 'h-full bg-yellow-400 w-0 transition-all duration-500';
+    } else {
+        bar.className = 'h-full bg-expense w-0 transition-all duration-500';
+    }
+
+    statusText.innerHTML = `Terpakai <b>${formatRupiah(expense)}</b> dari ${formatRupiah(monthlyBudget)}`;
+};
+
+// NEW FEATURE: Smart Insights
+const generateInsights = () => {
+    const monthlyData = getMonthlyData();
+    const expenseData = monthlyData.filter(t => t.type === 'expense');
+    const insightDiv = document.getElementById('smartInsight');
+    const insightText = document.getElementById('insightText');
+
+    if (expenseData.length === 0) {
+        insightDiv.classList.add('hidden');
+        return;
+    }
+
+    // Cari kategori paling boros
+    const catTotals = {};
+    expenseData.forEach(t => catTotals[t.category] = (catTotals[t.category] || 0) + t.amount);
+
+    let topCategory = Object.keys(catTotals).reduce((a, b) => catTotals[a] > catTotals[b] ? a : b);
+    let topAmount = catTotals[topCategory];
+    let totalExpense = expenseData.reduce((acc, curr) => acc + curr.amount, 0);
+
+    insightDiv.classList.remove('hidden');
+
+    if (topAmount > (totalExpense * 0.5)) {
+        insightText.innerHTML = `Pengeluaranmu bulan ini didominasi <b>${topCategory}</b> (${formatRupiah(topAmount)}). Coba direm dikit yuk!`;
+    } else if (monthlyBudget > 0 && totalExpense > monthlyBudget) {
+        insightText.innerHTML = `<span class="text-rose-600 font-semibold">Waduh! Pengeluaranmu udah ngelewatin batas budget bulanan!</span>`;
+    } else {
+        insightText.innerHTML = `Pencatatan yang bagus! Tetap pantau pengeluaranmu ya.`;
+    }
+};
+
+// Render List (Filter by Type & Month)
 const renderTransactions = () => {
     const listContainer = document.getElementById('transactionList');
     listContainer.innerHTML = '';
 
-    // 1. Filter Tipe
-    let filteredData = currentFilterType === 'all' ? transactions : transactions.filter(t => t.type === currentFilterType);
+    let filteredData = getMonthlyData(); // Filter bulan
+    if (currentFilterType !== 'all') {
+        filteredData = filteredData.filter(t => t.type === currentFilterType);
+    }
 
-    // 2. Filter Tanggal
-    const startDate = document.getElementById('filterStartDate').value;
-    const endDate = document.getElementById('filterEndDate').value;
-
-    if (startDate) filteredData = filteredData.filter(t => t.date >= startDate);
-    if (endDate) filteredData = filteredData.filter(t => t.date <= endDate);
-
-    // 3. Urutkan berdasarkan tanggal terbaru
     filteredData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     if (filteredData.length === 0) {
-        listContainer.innerHTML = `<div class="text-center text-slate-500 dark:text-slate-400 py-8">
-            <i class="ph ph-receipt text-4xl mb-2"></i>
-            <p>Belum ada transaksi.</p>
-        </div>`;
+        listContainer.innerHTML = `<div class="text-center text-slate-500 py-8"><i class="ph ph-receipt text-4xl mb-2"></i><p>Belum ada transaksi bulan ini.</p></div>`;
         return;
     }
 
     filteredData.forEach(trx => {
         const isIncome = trx.type === 'income';
-        const colorClass = isIncome ? 'text-income bg-emerald-50 dark:bg-emerald-500/10' : 'text-expense bg-rose-50 dark:bg-rose-500/10';
-        const iconClass = isIncome ? 'ph-arrow-down-left' : 'ph-arrow-up-right';
-        const amountPrefix = isIncome ? '+' : '-';
-        const amountColor = isIncome ? 'text-income' : 'text-slate-800 dark:text-white';
-
         const itemHTML = `
-            <div class="flex justify-between items-center p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border border-transparent hover:border-slate-100 dark:hover:border-slate-600 group">
-                <div class="flex items-center gap-4">
-                    <div class="${colorClass} w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center text-xl md:text-2xl"><i class="ph ${iconClass}"></i></div>
+            <div class="flex justify-between items-center p-3 md:p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border border-transparent hover:border-slate-100 dark:hover:border-slate-600">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <div class="${isIncome ? 'text-income bg-emerald-50 dark:bg-emerald-500/10' : 'text-expense bg-rose-50 dark:bg-rose-500/10'} w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center text-xl">
+                        <i class="ph ${isIncome ? 'ph-arrow-down-left' : 'ph-arrow-up-right'}"></i>
+                    </div>
                     <div>
-                        <h4 class="font-semibold text-sm md:text-base line-clamp-1">${trx.description}</h4>
-                        <div class="flex items-center gap-2 text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                        <h4 class="font-semibold text-sm md:text-base">${trx.description}</h4>
+                        <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                             <span class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">${trx.category}</span>
                             <span>•</span><span>${formatDate(trx.date)}</span>
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3 md:gap-4">
-                    <div class="font-bold ${amountColor} text-sm md:text-base text-right whitespace-nowrap">
-                        ${amountPrefix} ${formatRupiah(trx.amount)}
+                <div class="flex items-center gap-3">
+                    <div class="font-bold ${isIncome ? 'text-income' : 'text-slate-800 dark:text-white'} text-sm md:text-base whitespace-nowrap">
+                        ${isIncome ? '+' : '-'} ${formatRupiah(trx.amount)}
                     </div>
-                    <!-- Tombol Hapus -->
-                    <button onclick="deleteTransaction(${trx.id})" class="text-slate-400 hover:text-rose-500 transition p-1 bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 rounded-md">
-                        <i class="ph ph-trash text-lg"></i>
+                    <button onclick="deleteTransaction(${trx.id})" class="text-slate-400 hover:text-rose-500 p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 rounded-md transition">
+                        <i class="ph ph-trash"></i>
                     </button>
                 </div>
             </div>`;
@@ -123,186 +178,195 @@ const renderTransactions = () => {
     });
 };
 
-// Fungsi Global untuk Menghapus Transaksi
 window.deleteTransaction = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+    if (confirm('Hapus transaksi ini?')) {
         transactions = transactions.filter(t => t.id !== id);
-        saveTransactions(); // Simpan perubahan ke storage
-        updateApp();        // Render ulang UI
+        saveTransactions(); updateApp(); resetChartTimer();
     }
 };
 
-
 // ==========================================
-// 4. CHART.JS LOGIC & TIMER
+// 4. CHART.JS LOGIC
 // ==========================================
-let myChart;
-let currentChartMode = 'type';
-let chartRotateInterval;
-let progressInterval;
-const ROTATE_TIME = 5000;
+let myChart, currentChartMode = 'type', chartRotateInterval, progressInterval;
 const categoryColors = ['#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4', '#64748B'];
 
 const initChart = () => {
     const ctx = document.getElementById('financeChart').getContext('2d');
-    const isDark = document.documentElement.classList.contains('dark');
-
     myChart = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false, cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom', labels: { color: isDark ? '#e2e8f0' : '#475569', font: { family: "'Inter', sans-serif" }, padding: 15 } }
-            }
-        }
+        data: { labels: [], datasets: [{ data: [], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
     });
 };
 
 const updateChartData = () => {
     if (!myChart) initChart();
-
     const isDark = document.documentElement.classList.contains('dark');
+    myChart.options.plugins.legend.labels.color = isDark ? '#e2e8f0' : '#475569';
     myChart.data.datasets[0].borderColor = isDark ? '#1e293b' : '#fff';
     myChart.data.datasets[0].borderWidth = isDark ? 2 : 0;
 
-    // JIKA DATA KOSONG (Mencegah grafik error / tidak terlihat)
-    if (transactions.length === 0) {
-        myChart.data.labels = ['Belum ada data'];
+    const monthlyData = getMonthlyData(); // Pake data bulan ini aja
+
+    if (monthlyData.length === 0) {
+        myChart.data.labels = ['Kosong'];
         myChart.data.datasets[0].data = [1];
-        myChart.data.datasets[0].backgroundColor = isDark ? ['#334155'] : ['#E2E8F0']; // Warna abu-abu
-        myChart.update();
-        return;
+        myChart.data.datasets[0].backgroundColor = isDark ? ['#334155'] : ['#E2E8F0'];
+    } else {
+        if (currentChartMode === 'type') {
+            const inc = monthlyData.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0);
+            const exp = monthlyData.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0);
+            myChart.data.labels = ['Pemasukan', 'Pengeluaran'];
+            myChart.data.datasets[0].data = [inc, exp];
+            myChart.data.datasets[0].backgroundColor = ['#10B981', '#F43F5E'];
+        } else {
+            const catTotals = {};
+            monthlyData.forEach(t => catTotals[t.category] = (catTotals[t.category] || 0) + t.amount);
+            myChart.data.labels = Object.keys(catTotals);
+            myChart.data.datasets[0].data = Object.values(catTotals);
+            myChart.data.datasets[0].backgroundColor = categoryColors;
+        }
     }
-
-    // JIKA ADA DATA
-    if (currentChartMode === 'type') {
-        const income = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
-        const expense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
-
-        myChart.data.labels = ['Pemasukan', 'Pengeluaran'];
-        myChart.data.datasets[0].data = [income, expense];
-        myChart.data.datasets[0].backgroundColor = ['#10B981', '#F43F5E'];
-    }
-    else if (currentChartMode === 'category') {
-        const catTotals = {};
-        transactions.forEach(t => { catTotals[t.category] = (catTotals[t.category] || 0) + t.amount; });
-
-        const labels = Object.keys(catTotals);
-        const data = Object.values(catTotals);
-
-        myChart.data.labels = labels;
-        myChart.data.datasets[0].data = data;
-        myChart.data.datasets[0].backgroundColor = categoryColors.slice(0, labels.length);
-    }
-
     myChart.update();
 };
 
 const resetChartTimer = () => {
-    clearInterval(chartRotateInterval);
-    clearInterval(progressInterval);
-
-    const progressBar = document.getElementById('chartTimerBar');
-    if (!progressBar) return;
-
-    progressBar.style.width = '0%';
-
+    clearInterval(chartRotateInterval); clearInterval(progressInterval);
+    const bar = document.getElementById('chartTimerBar');
+    bar.style.width = '0%';
     let width = 0;
-    progressInterval = setInterval(() => {
-        width += (100 / (ROTATE_TIME / 100));
-        progressBar.style.width = width + '%';
-    }, 100);
-
+    progressInterval = setInterval(() => { width += 2; bar.style.width = width + '%'; }, 100);
     chartRotateInterval = setInterval(() => {
-        switchChartMode(currentChartMode === 'type' ? 'category' : 'type');
-    }, ROTATE_TIME);
+        currentChartMode = currentChartMode === 'type' ? 'category' : 'type';
+        document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
+            if (btn.dataset.target === currentChartMode) {
+                btn.classList.add('bg-white', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white', 'shadow-sm');
+                btn.classList.remove('text-slate-500');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white', 'shadow-sm');
+                btn.classList.add('text-slate-500');
+            }
+        });
+        updateChartData(); resetChartTimer();
+    }, 5000);
 };
-
-const switchChartMode = (mode) => {
-    currentChartMode = mode;
-    document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
-        if (btn.dataset.target === mode) {
-            btn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
-            btn.classList.remove('text-slate-500', 'dark:text-slate-400');
-        } else {
-            btn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
-            btn.classList.add('text-slate-500', 'dark:text-slate-400');
-        }
-    });
-
-    updateChartData();
-    resetChartTimer();
-};
-
-document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => switchChartMode(e.target.dataset.target));
-});
-
 
 // ==========================================
 // 5. EVENT LISTENERS
 // ==========================================
 
-// Input Form Transaksi (Fokus Tanggal)
-const dateInput = document.getElementById('date');
-dateInput.addEventListener('focus', function () {
-    if (!this.value) this.valueAsDate = new Date();
+// NEW FEATURE: Format Input Nominal Auto Titik
+const amountInput = document.getElementById('amountDisplay');
+amountInput.addEventListener('keyup', function (e) {
+    let val = this.value.replace(/[^0-9]/g, ''); // Hapus semua selain angka
+    if (val) this.value = formatNumberDots(val); // Kasih titik
+    else this.value = '';
 });
 
-// SUBMIT FORM BARU
 document.getElementById('transactionForm').addEventListener('submit', function (e) {
     e.preventDefault();
     const type = document.querySelector('input[name="type"]:checked').value;
-    const amount = parseFloat(document.getElementById('amount').value);
+
+    // Hapus titik sebelum save jadi angka murni
+    const rawAmount = document.getElementById('amountDisplay').value.replace(/\./g, '');
+    const amount = parseFloat(rawAmount);
+
     const category = document.getElementById('category').value;
     const date = document.getElementById('date').value;
     const description = document.getElementById('description').value;
 
-    // Tambah Data Baru
     transactions.push({ id: Date.now(), type, amount, category, date, description });
-
-    // SIMPAN KE LOCAL STORAGE
     saveTransactions();
-
     this.reset();
-    updateApp();
-    resetChartTimer();
+    document.getElementById('date').valueAsDate = new Date(); // Reset tanggal ke hari ini
+    updateApp(); resetChartTimer();
 });
 
-// Filter Button Tipe
-const filterBtns = document.querySelectorAll('.filter-btn');
-filterBtns.forEach(btn => {
+// Filter Tipe Klik
+document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        filterBtns.forEach(b => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
             b.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
-            b.classList.add('text-slate-500', 'dark:text-slate-400');
+            b.classList.add('text-slate-500');
         });
-        e.target.classList.remove('text-slate-500', 'dark:text-slate-400');
+        e.target.classList.remove('text-slate-500');
         e.target.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
-
         currentFilterType = e.target.getAttribute('data-filter');
         renderTransactions();
     });
 });
 
-// Filter Tanggal
-document.getElementById('btnApplyDateFilter').addEventListener('click', () => {
-    renderTransactions();
+// NEW FEATURE: Filter Bulan Berubah
+document.getElementById('monthFilter').addEventListener('change', function () {
+    currentMonth = this.value;
+    updateApp();
+    resetChartTimer();
 });
 
-document.getElementById('btnResetDateFilter').addEventListener('click', () => {
-    document.getElementById('filterStartDate').value = '';
-    document.getElementById('filterEndDate').value = '';
-    renderTransactions();
+// NEW FEATURE: Set Budget
+document.getElementById('btnSetBudget').addEventListener('click', () => {
+    let input = prompt("Masukkan batas pengeluaran bulanan (Angka saja):", monthlyBudget || "");
+    if (input !== null && !isNaN(input) && input !== "") {
+        monthlyBudget = parseFloat(input);
+        saveBudget();
+        updateBudgetUI();
+        generateInsights();
+    }
 });
 
+// NEW FEATURE: Export Data
+document.getElementById('btnExport').addEventListener('click', () => {
+    const dataStr = JSON.stringify(transactions);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DompetKu_Backup_${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// NEW FEATURE: Import Data
+document.getElementById('btnImport').addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        try {
+            const importedData = JSON.parse(event.target.result);
+            if (Array.isArray(importedData)) {
+                transactions = importedData;
+                saveTransactions();
+                updateApp();
+                alert("Data berhasil di-import!");
+            } else {
+                alert("Format file tidak sesuai!");
+            }
+        } catch (err) {
+            alert("Error membaca file JSON!");
+        }
+    };
+    reader.readAsText(file);
+    this.value = ''; // Reset input
+});
+
+document.querySelectorAll('.chart-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        currentChartMode = e.target.dataset.target;
+        updateChartData(); resetChartTimer();
+    });
+});
 
 // ==========================================
 // 6. INIT APLIKASI
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    initChart();
-    updateApp();
-    resetChartTimer();
+    document.getElementById('date').valueAsDate = new Date();
+    initChart(); updateApp(); resetChartTimer();
 });
