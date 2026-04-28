@@ -178,12 +178,65 @@ const renderTransactions = () => {
     });
 };
 
-window.deleteTransaction = (id) => {
-    if (confirm('Hapus transaksi ini?')) {
-        transactions = transactions.filter(t => t.id !== id);
-        saveTransactions(); updateApp(); resetChartTimer();
-    }
+// ==========================================
+// LOGIC CUSTOM MODAL (POPUP)
+// ==========================================
+let idToDelete = null; // Menyimpan ID sementara yang mau dihapus
+
+// Helper untuk Buka Modal dengan Animasi
+const openModal = (modalId, backdropId, contentId) => {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById(backdropId);
+    const content = document.getElementById(contentId);
+
+    modal.classList.remove('hidden');
+    // Beri jeda dikit biar display:block ngerender dulu sebelum animasi jalan
+    setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        backdrop.classList.add('opacity-100');
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
 };
+
+// Helper untuk Tutup Modal dengan Animasi
+const closeModal = (modalId, backdropId, contentId) => {
+    const modal = document.getElementById(modalId);
+    const backdrop = document.getElementById(backdropId);
+    const content = document.getElementById(contentId);
+
+    backdrop.classList.remove('opacity-100');
+    backdrop.classList.add('opacity-0');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+
+    // Tunggu animasi selesai baru di-hide
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+// --- LOGIC HAPUS DATA ---
+window.deleteTransaction = (id) => {
+    idToDelete = id; // Simpan ID ke variable global sementara
+    openModal('deleteModal', 'deleteBackdrop', 'deleteModalContent');
+};
+
+document.getElementById('btnCancelDelete').addEventListener('click', () => {
+    closeModal('deleteModal', 'deleteBackdrop', 'deleteModalContent');
+    idToDelete = null; // Reset ID
+});
+
+document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+    if (idToDelete !== null) {
+        transactions = transactions.filter(t => t.id !== idToDelete);
+        saveTransactions();
+        updateApp();
+        resetChartTimer();
+        closeModal('deleteModal', 'deleteBackdrop', 'deleteModalContent');
+        idToDelete = null; // Reset ID
+    }
+});
 
 // ==========================================
 // 4. CHART.JS LOGIC
@@ -304,14 +357,44 @@ document.getElementById('monthFilter').addEventListener('change', function () {
     resetChartTimer();
 });
 
-// NEW FEATURE: Set Budget
+// --- LOGIC ATUR BUDGET ---
+const budgetInput = document.getElementById('budgetModalInput');
+
+// Format Auto Titik di Input Modal Budget
+budgetInput.addEventListener('keyup', function () {
+    let val = this.value.replace(/[^0-9]/g, '');
+    if (val) this.value = formatNumberDots(val);
+    else this.value = '';
+});
+
+// Tombol Buka Modal Budget di Main Screen
 document.getElementById('btnSetBudget').addEventListener('click', () => {
-    let input = prompt("Masukkan batas pengeluaran bulanan (Angka saja):", monthlyBudget || "");
-    if (input !== null && !isNaN(input) && input !== "") {
-        monthlyBudget = parseFloat(input);
+    // Isi inputan dengan budget saat ini (kalau ada)
+    budgetInput.value = monthlyBudget > 0 ? formatNumberDots(monthlyBudget) : '';
+    openModal('budgetModal', 'budgetBackdrop', 'budgetModalContent');
+    // Auto fokus ke inputan
+    setTimeout(() => budgetInput.focus(), 100);
+});
+
+// Tombol Batal Modal Budget
+document.getElementById('btnCancelBudget').addEventListener('click', () => {
+    closeModal('budgetModal', 'budgetBackdrop', 'budgetModalContent');
+});
+
+// Tombol Simpan Modal Budget
+document.getElementById('btnSaveBudget').addEventListener('click', () => {
+    // Bersihin titiknya dulu sebelum disave jadi angka
+    const rawBudget = budgetInput.value.replace(/\./g, '');
+    const newBudget = parseFloat(rawBudget);
+
+    if (!isNaN(newBudget) && newBudget >= 0) {
+        monthlyBudget = newBudget;
         saveBudget();
         updateBudgetUI();
         generateInsights();
+        closeModal('budgetModal', 'budgetBackdrop', 'budgetModalContent');
+    } else {
+        alert("Mohon masukkan nominal yang valid."); // Fallback kecil jika salah input
     }
 });
 
