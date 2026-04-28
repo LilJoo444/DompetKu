@@ -15,9 +15,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        primary: '#4F46E5', income: '#10B981', expense: '#F43F5E', bglight: '#F8FAFC'
-                    }
+                    colors: { primary: '#4F46E5', income: '#10B981', expense: '#F43F5E', bglight: '#F8FAFC' }
                 }
             }
         }
@@ -64,99 +62,104 @@
 
     <!-- Navbar -->
     <nav
-        class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-100 dark:border-slate-700/50 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-100 dark:border-slate-700/50 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="bg-primary text-white p-2 rounded-lg"><i class="ph ph-wallet text-xl"></i></div>
-                <h1 class="text-xl font-bold tracking-tight">DompetKu</h1>
+                <div class="bg-primary text-white p-1.5 md:p-2 rounded-lg"><i
+                        class="ph ph-wallet text-lg md:text-xl"></i></div>
+                <h1 class="text-lg md:text-xl font-bold tracking-tight">DompetKu</h1>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 md:gap-3">
                 <button id="themeToggle"
-                    class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
-                    <i class="ph ph-moon text-xl" id="themeIcon"></i>
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+                    <i class="ph ph-moon text-lg md:text-xl" id="themeIcon"></i>
                 </button>
                 <div
-                    class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 font-semibold cursor-pointer">
+                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 font-semibold cursor-pointer text-sm md:text-base">
                     J</div>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-4 mt-8 space-y-6">
+    <main class="max-w-6xl mx-auto px-4 mt-6 md:mt-8 space-y-6">
 
-        <!-- Header Section & NEW FEATURE: Export/Import & Month Filter -->
+        <!-- Header Section -->
         <div
             class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-            <div>
-                <h2 class="text-2xl font-semibold">Halo, Joseph! 👋</h2>
-                <div class="flex items-center gap-2 mt-2">
+            <div class="w-full md:w-auto">
+                <h2 class="text-xl md:text-2xl font-semibold">Halo, Joseph! 👋</h2>
+                <div class="flex items-center gap-2 mt-2 w-full">
                     <input type="month" id="monthFilter"
-                        class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer color-scheme-light dark:[color-scheme:dark]">
-                    <span class="text-slate-500 dark:text-slate-400 text-sm">Ringkasan Bulan Ini</span>
+                        class="flex-1 md:flex-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 md:py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer color-scheme-light dark:[color-scheme:dark]">
                 </div>
             </div>
 
-            <div class="flex gap-2 w-full md:w-auto">
+            <!-- REVISI RESPONSIVE: Grid di mobile, Flex di Desktop -->
+            <div class="grid grid-cols-2 md:flex gap-2 w-full md:w-auto">
+                <!-- REVISI ICON: Pake icon panah biar pasti render -->
                 <button id="btnExport"
-                    class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700">
-                    <i class="ph ph-export"></i> Export
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <i class="ph ph-upload-simple text-lg text-primary"></i> Export
                 </button>
                 <button id="btnImport"
-                    class="flex-1 md:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700">
-                    <i class="ph ph-import"></i> Import
+                    class="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <i class="ph ph-download-simple text-lg text-income"></i> Import
                 </button>
                 <input type="file" id="fileInput" accept=".json" class="hidden">
             </div>
         </div>
 
-        <!-- NEW FEATURE: Smart Insights -->
+        <!-- Smart Insights -->
         <div id="smartInsight"
-            class="hidden bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300 p-4 rounded-xl flex items-start gap-3 text-sm">
-            <i class="ph ph-lightbulb text-xl text-yellow-500"></i>
-            <p id="insightText">Insight muncul di sini...</p>
+            class="hidden bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300 p-3 md:p-4 rounded-xl flex items-start gap-3 text-sm">
+            <i class="ph ph-lightbulb text-xl text-yellow-500 mt-0.5"></i>
+            <p id="insightText" class="leading-relaxed">Insight muncul di sini...</p>
         </div>
 
         <!-- SUMMARY CARDS -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div
-                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition">
-                <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400 mb-2">
-                    <i class="ph ph-coins text-xl"></i><span class="text-sm font-medium">Sisa Saldo (Bulan Ini)</span>
+                class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition sm:col-span-2 md:col-span-1">
+                <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                    <i class="ph ph-coins text-xl"></i><span class="text-xs md:text-sm font-medium">Sisa Saldo</span>
                 </div>
-                <h3 class="text-3xl font-bold" id="totalBalance">Rp 0</h3>
+                <h3 class="text-2xl md:text-3xl font-bold truncate" id="totalBalance">Rp 0</h3>
             </div>
             <div
-                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition">
-                <div class="flex items-center gap-3 text-income mb-2">
-                    <div class="bg-emerald-50 dark:bg-emerald-500/10 p-1.5 rounded-md"><i
-                            class="ph ph-trend-up text-xl"></i></div>
-                    <span class="text-sm font-medium">Pemasukan</span>
+                class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition">
+                <div class="flex items-center gap-2 text-income mb-2">
+                    <div class="bg-emerald-50 dark:bg-emerald-500/10 p-1 rounded-md"><i
+                            class="ph ph-trend-up text-lg"></i></div>
+                    <span class="text-xs md:text-sm font-medium">Pemasukan</span>
                 </div>
-                <h3 class="text-2xl font-bold" id="totalIncome">Rp 0</h3>
+                <h3 class="text-xl md:text-2xl font-bold truncate" id="totalIncome">Rp 0</h3>
             </div>
             <div
-                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition">
-                <div class="flex items-center gap-3 text-expense mb-2">
-                    <div class="bg-rose-50 dark:bg-rose-500/10 p-1.5 rounded-md"><i
-                            class="ph ph-trend-down text-xl"></i></div>
-                    <span class="text-sm font-medium">Pengeluaran</span>
+                class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-md transition">
+                <div class="flex items-center gap-2 text-expense mb-2">
+                    <div class="bg-rose-50 dark:bg-rose-500/10 p-1 rounded-md"><i class="ph ph-trend-down text-lg"></i>
+                    </div>
+                    <span class="text-xs md:text-sm font-medium">Pengeluaran</span>
                 </div>
-                <h3 class="text-2xl font-bold" id="totalExpense">Rp 0</h3>
+                <h3 class="text-xl md:text-2xl font-bold truncate" id="totalExpense">Rp 0</h3>
             </div>
         </section>
 
-        <!-- NEW FEATURE: Budgeting Progress Bar -->
+        <!-- Budgeting Progress Bar -->
         <section
-            class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
-            <div class="flex justify-between items-end mb-2">
+            class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
+            <div class="flex justify-between items-start md:items-end mb-2 flex-col md:flex-row gap-2 md:gap-0">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Batas Pengeluaran Bulanan</h3>
-                    <p class="text-xs text-slate-500 mt-1" id="budgetStatusText">Set budget biar nggak boncos!</p>
+                    <p class="text-xs text-slate-500 mt-0.5" id="budgetStatusText">Set budget biar nggak boncos!</p>
                 </div>
-                <button id="btnSetBudget" class="text-xs text-primary font-medium hover:underline">Atur Budget</button>
+                <button id="btnSetBudget"
+                    class="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-medium hover:bg-primary/20 transition whitespace-nowrap">
+                    Atur Budget
+                </button>
             </div>
-            <div class="w-full h-3 bg-slate-100 dark:bg-slate-700 mt-2 rounded-full overflow-hidden">
+            <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-700 mt-3 rounded-full overflow-hidden">
                 <div id="budgetProgressBar" class="h-full bg-income w-0 transition-all duration-500"></div>
             </div>
         </section>
@@ -165,20 +168,20 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Grafik -->
             <div
-                class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 lg:col-span-2 flex flex-col items-center">
+                class="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 lg:col-span-2 flex flex-col items-center">
                 <div class="w-full flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold">Statistik Bulan Ini</h3>
+                    <h3 class="text-base md:text-lg font-semibold">Statistik</h3>
                     <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
-                        <button id="btnChartType"
+                        <button
                             class="chart-toggle-btn px-3 py-1 text-xs font-medium rounded-md bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition"
                             data-target="type">Tipe</button>
-                        <button id="btnChartCategory"
+                        <button
                             class="chart-toggle-btn px-3 py-1 text-xs font-medium rounded-md text-slate-500 dark:text-slate-400 transition"
                             data-target="category">Kategori</button>
                     </div>
                 </div>
                 <div
-                    class="relative w-full max-w-[280px] md:max-w-[320px] aspect-square flex-grow flex items-center justify-center">
+                    class="relative w-full max-w-[240px] md:max-w-[320px] aspect-square flex-grow flex items-center justify-center">
                     <canvas id="financeChart"></canvas>
                 </div>
                 <div class="w-full h-1 bg-slate-100 dark:bg-slate-700 mt-4 rounded-full overflow-hidden">
@@ -188,35 +191,36 @@
             </div>
 
             <!-- Form Tambah Transaksi -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 relative"
+            <div class="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50"
                 id="formSection">
-                <h3 class="text-lg font-semibold mb-4 border-b dark:border-slate-700 pb-2">Tambah Transaksi</h3>
+                <h3 class="text-base md:text-lg font-semibold mb-4 border-b dark:border-slate-700 pb-2">Tambah Transaksi
+                </h3>
                 <form id="transactionForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-3 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
+                    <div class="grid grid-cols-2 gap-2 md:gap-3 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
                         <label class="cursor-pointer">
                             <input type="radio" name="type" value="income" class="peer sr-only" checked>
                             <div
-                                class="text-center py-2 rounded-md text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-income peer-checked:shadow-sm text-slate-500">
+                                class="text-center py-2 rounded-md text-xs md:text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-income peer-checked:shadow-sm text-slate-500">
                                 Pemasukan</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="type" value="expense" class="peer sr-only">
                             <div
-                                class="text-center py-2 rounded-md text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-expense peer-checked:shadow-sm text-slate-500">
+                                class="text-center py-2 rounded-md text-xs md:text-sm font-medium transition-all peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-expense peer-checked:shadow-sm text-slate-500">
                                 Pengeluaran</div>
                         </label>
                     </div>
                     <div>
                         <label class="block text-xs text-slate-500 mb-1">Nominal (Rp)</label>
-                        <!-- NEW FEATURE: Type text agar bisa format auto titik -->
+                        <!-- Pake text-base/text-lg biar HP iOS ga nge-zoom otomatis -->
                         <input type="text" id="amountDisplay" placeholder="0" required
-                            class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition font-semibold text-lg">
+                            class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 md:px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition font-semibold text-base md:text-lg text-slate-800 dark:text-white">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Kategori</label>
                             <select id="category"
-                                class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition appearance-none">
+                                class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition appearance-none text-slate-800 dark:text-white">
                                 <option value="Gaji">Gaji</option>
                                 <option value="Makanan">Makanan</option>
                                 <option value="Transportasi">Transportasi</option>
@@ -228,117 +232,104 @@
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Tanggal</label>
                             <input type="date" id="date" required
-                                class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition color-scheme-light dark:[color-scheme:dark]">
+                                class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition color-scheme-light dark:[color-scheme:dark] text-slate-800 dark:text-white">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs text-slate-500 mb-1">Catatan</label>
                         <input type="text" id="description" placeholder="Contoh: Makan siang" required
-                            class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition">
+                            class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-3 md:px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition text-slate-800 dark:text-white">
                     </div>
                     <button type="submit"
-                        class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-2 flex justify-center items-center gap-2">
+                        class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition mt-2 flex justify-center items-center gap-2 text-sm md:text-base">
                         <i class="ph ph-plus-circle text-lg"></i> Simpan Transaksi
                     </button>
                 </form>
             </div>
         </section>
 
-        <!-- HISTORY SECTION (Tidak diubah banyak, hanya UI List) -->
+        <!-- HISTORY SECTION -->
         <section
-            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Riwayat Transaksi</h3>
-                <div class="flex gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50 p-4 md:p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                <h3 class="text-base md:text-lg font-semibold">Riwayat Transaksi</h3>
+                <div
+                    class="flex gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg w-full sm:w-auto overflow-x-auto hide-scroll">
                     <button
-                        class="filter-btn active px-4 py-1.5 text-sm rounded-md bg-white dark:bg-slate-700 shadow-sm font-medium transition"
+                        class="filter-btn active px-3 md:px-4 py-1.5 text-xs md:text-sm rounded-md bg-white dark:bg-slate-700 shadow-sm font-medium transition whitespace-nowrap"
                         data-filter="all">Semua</button>
-                    <button class="filter-btn px-4 py-1.5 text-sm rounded-md font-medium text-slate-500 transition"
+                    <button
+                        class="filter-btn px-3 md:px-4 py-1.5 text-xs md:text-sm rounded-md font-medium text-slate-500 transition whitespace-nowrap"
                         data-filter="income">Pemasukan</button>
-                    <button class="filter-btn px-4 py-1.5 text-sm rounded-md font-medium text-slate-500 transition"
+                    <button
+                        class="filter-btn px-3 md:px-4 py-1.5 text-xs md:text-sm rounded-md font-medium text-slate-500 transition whitespace-nowrap"
                         data-filter="expense">Pengeluaran</button>
                 </div>
             </div>
-            <div id="transactionList" class="space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
+            <div id="transactionList" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 md:pr-2"></div>
         </section>
 
     </main>
 
+    <!-- Mobile Floating Action Button -->
+    <a href="#formSection"
+        class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(79,70,229,0.4)] hover:bg-indigo-700 transition transform hover:scale-105 z-40">
+        <i class="ph ph-plus text-2xl"></i>
+    </a>
+
     <!-- ======================================= -->
     <!-- CUSTOM MODALS (POPUP)                   -->
     <!-- ======================================= -->
-    
+
     <!-- Modal Atur Budget -->
     <div id="budgetModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <!-- Backdrop Blur -->
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="budgetBackdrop">
         </div>
-    
-        <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 opacity-0 transition-all duration-300"
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-5 md:p-6 transform scale-95 opacity-0 transition-all duration-300"
             id="budgetModalContent">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-primary/10 text-primary p-2 rounded-full">
-                    <i class="ph ph-target text-xl"></i>
-                </div>
-                <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Atur Batas Budget</h3>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="bg-primary/10 text-primary p-2 rounded-full"><i class="ph ph-target text-xl"></i></div>
+                <h3 class="text-base md:text-lg font-semibold text-slate-800 dark:text-white">Atur Batas Budget</h3>
             </div>
-    
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Masukkan batas maksimal pengeluaranmu untuk bulan
-                ini.</p>
-    
+            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-4">Masukkan batas maksimal pengeluaranmu
+                untuk bulan ini. (Kosongkan jika tidak ada target)</p>
             <div>
-                <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Nominal Budget (Rp)</label>
                 <input type="text" id="budgetModalInput" placeholder="Contoh: 1.500.000"
-                    class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition font-semibold text-lg text-slate-800 dark:text-white">
+                    class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition font-semibold text-base md:text-lg text-slate-800 dark:text-white">
             </div>
-    
-            <div class="flex gap-3 mt-6">
+            <div class="flex gap-2 md:gap-3 mt-5">
                 <button id="btnCancelBudget"
-                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition">
-                    Batal
-                </button>
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition text-sm">Batal</button>
                 <button id="btnSaveBudget"
-                    class="flex-1 bg-primary hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition">
-                    Simpan
-                </button>
+                    class="flex-1 bg-primary hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition text-sm">Simpan</button>
             </div>
         </div>
     </div>
-    
+
     <!-- Modal Konfirmasi Hapus -->
     <div id="deleteModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <!-- Backdrop Blur -->
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="deleteBackdrop">
         </div>
-    
-        <!-- Modal Content -->
-        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 opacity-0 transition-all duration-300"
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-[320px] p-5 md:p-6 transform scale-95 opacity-0 transition-all duration-300"
             id="deleteModalContent">
             <div class="flex flex-col items-center text-center">
-                <div class="bg-rose-100 dark:bg-rose-500/20 text-rose-500 p-3 rounded-full mb-4">
-                    <i class="ph ph-warning-circle text-3xl"></i>
-                </div>
-                <h3 class="text-lg font-semibold text-slate-800 dark:text-white mb-1">Hapus Transaksi?</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Data yang dihapus tidak dapat dikembalikan lagi.
-                    Yakin ingin melanjutkan?</p>
+                <div class="bg-rose-100 dark:bg-rose-500/20 text-rose-500 p-3 rounded-full mb-4"><i
+                        class="ph ph-trash text-3xl"></i></div>
+                <h3 class="text-base md:text-lg font-semibold text-slate-800 dark:text-white mb-1">Hapus Transaksi?</h3>
+                <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6">Data yang dihapus tidak dapat
+                    dikembalikan lagi.</p>
             </div>
-    
-            <div class="flex gap-3">
+            <div class="flex gap-2 md:gap-3">
                 <button id="btnCancelDelete"
-                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition">
-                    Batal
-                </button>
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2.5 rounded-lg transition text-sm">Batal</button>
                 <button id="btnConfirmDelete"
-                    class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-medium py-2.5 rounded-lg transition">
-                    Ya, Hapus
-                </button>
+                    class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-medium py-2.5 rounded-lg transition text-sm">Ya,
+                    Hapus</button>
             </div>
         </div>
     </div>
 
     <script src="app.js"></script>
-
 </body>
 
 </html>
